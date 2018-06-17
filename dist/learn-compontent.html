@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>学习父子组件之间的传值</title>
+    <link rel="stylesheet" href="">
+    <script src="js/vue.js"></script>
+    <script src="assets/vue-router.js"></script>
+    <style type="text/css" media="screen">
+        .v-enter,
+        .v-leave-to {
+            opacity: 0;
+            transform: translateX(80px);
+        }
+
+        .v-enter-active,
+        .v-leave-active {
+            transition: all 0.5s ease-in-out;
+        }
+        .router-link-active {
+            background: #ddd;
+        }
+        .myactive {
+            color: #fff;
+            background: #f00;
+            padding: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>{{ msg }}</h1>
+        <hr>
+        <com1 v-bind:parentmsg="msg" @func='getFormSonData'></com1>
+
+        <router-link to="/login">登录</router-link>
+        <router-link to="/register">注册</router-link>
+
+        <transition mode="out-in">
+            <router-view></router-view>
+        </transition>
+
+
+        <hr>
+        <div>
+            <input type="text" name="" v-model="firstname" @keyup="getFullName" />+
+            <input type="text" name="" v-model="lastname" @keyup="getFullName" />=
+            <input type="text" name="" v-model="fullname" />
+        </div>
+
+        <hr>
+        <h4>watch实现数据监听</h4>
+
+        <div>
+            <input type="text" name="" v-model="firstname1" />+
+            <input type="text" name="" v-model="lastname1" />=
+            <input type="text" name="" v-model="fullname1" />
+        </div>
+
+        <hr>
+        <h4>computed实现数据监听</h4>
+
+        <div>
+            <input type="text" name="" v-model="firstname2" />+
+            <input type="text" name="" v-model="lastname2" />=
+            <input type="text" name="" v-model="fullname2" />
+        </div>
+
+        
+    </div>
+
+
+    <template id="tem1">
+        <div>
+            <h1 @click="giveParentData">我是子元素</h1>
+            <h2>这是来自于父组件的语句 ----- {{ parentmsg }}</h2>
+        </div>
+    </template>
+
+    <template id="login">
+        <div>
+            <h2>这是登录组件</h2>
+
+            <router-link to='/login/password'>密码</router-link>
+            <router-link to='/login/pconfirm'>重置密码</router-link>
+
+            <router-view></router-view>
+        </div>
+    </template>
+        
+    <script>
+
+        var password = {
+            template:'<h5>这是密码区域</h5>'
+        }
+
+        var pconfirm = {
+            template:'<h5>这是重置密码区域</h5>'
+        }
+
+        var login = {
+            template:'#login',
+        }
+
+        var register = {
+            template:'<h2>这是注册组件</h2>'
+        }
+
+        var routerObj = new VueRouter({
+            routes: [
+                { path: '/', component: vm},
+                { path: '/login', component: login,children: [
+                    { path: 'password', component: password},
+                    { path: 'pconfirm', component: pconfirm}
+
+                ]},
+                { path: '/register', component: register}
+
+            ],
+            linkActiveClass:'myactive'
+        })
+
+
+        var com1 = {
+            template:'#tem1',
+            props: ['parentmsg'],
+            data() {
+                return {
+                    msg: '我是儿子，我也很有钱哦！爸爸，给您花吧.....'
+                }
+            },
+            methods: {
+                giveParentData(msg) {
+                    this.$emit('func', this.msg)
+
+                }
+            }
+        }
+
+
+
+        var vm = new Vue({
+            el:'#app',
+            data: {
+                msg: '爸爸有100块钱，宝宝，要不？',
+                firstname:'',
+                lastname:'',
+                fullname:'',
+                firstname1:'',
+                lastname1:'',
+                fullname1:'',
+                firstname2:'',
+                lastname2:''
+                // fullname2:''
+            },
+            // 第一种监听数据的方式：采用调用函数的形式
+            methods: {
+                getFormSonData(msg) {
+                    this.msg = this.msg + msg;
+                },
+                getFullName() {
+                    this.fullname = this.firstname + '-' + this.lastname;
+                }
+            },
+            // 第二种监听数据的方式：采用watch的形式
+
+            watch: {
+                'firstname1': function(newValue, oldValue) {
+                    this.fullname1 = newValue + '-' + this.lastname1;
+                },
+                'lastname1': function(newValue) {
+                    this.fullname1 = this.firstname1 + '-' + newValue;
+                }
+            },
+            components: {
+                com1
+            },
+            router: routerObj,
+
+            // watch 可以监听路由
+            watch: {
+                '$route.path': function(newVal, oldVal) {
+                    if (newVal === '/login') {
+                        console.log('欢迎来到登录页面')
+                    } else if (newVal === '/register') {
+                        console.log('欢迎来到注册页面')
+                    }
+                }
+            },
+            computed: {
+                'fullname2': function() {
+                    return this.firstname2 + '-' + this.lastname2;
+                }
+            }
+        })
+
+    </script>
+</body>
+</html>

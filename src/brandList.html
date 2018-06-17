@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta charset=utf-8>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>品牌列表的添加功能</title>
+    <link rel="stylesheet" href="">
+    <style type="text/css" media="screen">
+        body, div, form, input, a,table,tbody, tr,td,p {
+            box-sizing: border-box;
+        }
+        input {
+            border:  none;
+            outline: none;
+            border:  1px solid #ddd;
+        }
+        .brand-form {
+            margin-bottom: 10px;
+        }
+        .brand-form > form input {
+            display: inline-block;
+            width: 140px;
+            border-radius: 4px;
+            height: 30px;
+            line-height: 30px;
+            padding-left: 5px;
+            margin-left: 10px;
+        }
+        .add-btn {
+            color: #333;
+            text-decoration: none;
+            background: #006699;
+            padding: 4px 6px;
+            color:  #fff;
+            font-size: 12px;
+            border-radius: 4px;
+        } 
+        .brand-table {
+            margin-top: 30px;
+            border-top: 1px solid #006699;
+            padding-top: 10px;
+        }
+        .brand-table > table {
+            padding: 10px 0;
+            border: 1px solid #ddd;
+            width: 800px;
+            border-collapse: collapse;
+        }
+        .brand-table table tr {
+            border-top: 1px solid #ddd;
+        }
+        .brand-table > table td {
+            width: 25%;
+            text-align:  center;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        .time {
+            font-size: 16px;
+            color: #f00;
+            font-weight: bolder; 
+        }
+
+        /* 发表评论 */
+
+        .comments .list .item {
+            width:  100%;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .comments .list .item .user {
+                float: right;
+                /* width: 50px; */
+                background: #333;
+                color: #fff;
+                text-align: center;
+                border-radius: 5px;
+                margin-right: 10px;
+                font-size: 12px;
+                padding: 4px 10px;
+        }
+        .comment-form {
+            margin: 10px 20px;
+        }
+
+        .comment-form input {
+            width:  100%;
+            padding: 6px;
+            border: none;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .comment-form .add {
+            display: block;
+            width: 100px;
+            text-align: center;
+            background: #006699;
+            height: 30px;
+            line-height: 30px; 
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+    </style>
+    <script src="assets/vue-resource.js"></script>
+</head>
+<body>
+    <!-- <div class="brand-list">
+        <div class="brand-form">
+            <form>
+                <div class="">
+                    <label>id:<input type="number" name="brandId" value="" placeholder="请输入id" v-model="id"></label>
+                    <label>name:<input type="text" name="brandName" value="" placeholder="请输入name" v-model="name" @keyup.enter='add'></label>
+                    <a href="javascript:;" type="button" class="add-btn" @click="add()">添加</a>
+                    <label>搜索名称关键字:<input type="text" name="brandName" value="" placeholder="请输入关键字" v-model="keywords" v-focus v-colors /></label>
+                </div>
+            </form>
+        </div>
+        <div class="brand-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>品牌名称</th>
+                        <th>添加时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for = "item in search(keywords)" :key = "item.id">
+                        <td class="id">{{ item.id }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.ctime | dateFormat('') }}</td>
+                        <td><a type="button" @click.prevent="del(item.id)">删除</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="time" v-fontweight v-fontsize="'30px'">2018-06-13 15:46:50</p>
+        </div>
+        <input type="button" name="" value="改变" @click="msg='1234'" />
+        <h3 class="title">{{ msg }}</h3>
+    </div> -->
+
+    <hr>
+    <hr>
+    <!-- 发表评论 -->
+
+    <div class="comments">
+        <!-- reference -->
+        <!-- <h3 ref="myh3" @click="getElement">哈哈哈，接啊哈哈哈</h3> -->
+        <!-- <h3 ref="myh2" @click="getElement">哈哈哈，接啊哈哈哈</h3> -->
+        <com-box v-on:func="localComments"></com-box>
+        <ul class="list">
+            <li class="item" v-for="item in list" :key="item.id">
+                <span class="user">评论人：{{ item.user }}</span>
+                {{ item.content }}
+            </li>
+        </ul>
+    </div>
+    <template id="temComment">
+        <form class="comment-form">
+            <div class="form-group">
+            <label>评论人:<input type="text" name="" value="" placeholder="请输入名字" v-model="user"></label>
+            </div>
+            <div class="form-group">
+                <label>评论内容:<input type="text" name="" value="" placeholder="请输入评论" v-model="content"></label>
+            </div>
+            <a type="button" class="add" @click="postComment">发表评论</a>
+            </form>
+    </template>
+
+
+
+    <script src="js/vue.js"></script>
+
+    
+
+    <script>
+
+        var commentBox = {
+            template: '#temComment',
+            data() {
+                return {
+                    content: '',
+                    user: '',
+                    commentList:[]
+                }
+            },
+            methods: {
+                postComment() {
+                    // 发表评论的业务逻辑
+                    
+                    // 先定一个最新的评论数据对象
+                    // 发表评论存放点localStorage
+                    // localStorage 只支持字符串数据的存储， JSON.stringify
+                    // 在保存最新的评论数据之前，要先获取localStorage中之前的数据
+                    // 转换为一个数组对象(JSON.parseInt) 
+                    // 如果localStorage的评论为空，可以返回一个"[]"
+                    // 调用localStorage.setItem()
+
+                    // 生成一个新的评论
+
+                    var comment = { id: Math.floor(Math.random() * 10 + 1), user: this.user, content: this.content};
+
+                    // 获取之前的评论
+
+                    var commentList = JSON.parse(localStorage.getItem('cmts') || '[]');
+                     
+                     // 把当前评论存储到本地存储中
+                     commentList.unshift(comment);
+
+
+                     localStorage.setItem('cmts', JSON.stringify(commentList));
+
+                     this.content = this.user = '';
+
+                    // if (!localStorage.getItem()) {
+                    //     return [];
+                    // } else {
+                    //     this.commentList.push(JSON.parseInt(localStorage.getItem()));
+                    //     localStorage.setItem(JSON.stringify(this.commentList));
+                    // }
+
+
+                    // this.list.push({, this.user: user, this.name: name })
+
+                    this.$emit('func');
+                },
+
+
+            },
+        }
+        // 发表评论
+
+        var comments = new Vue({
+            el: '.comments',
+            data: {
+                list: [
+                // 当有本地数据后，这些将被覆盖
+                    {id: Math.floor(Math.random()*10 + 1), user: '李白', content: '天生我材必有用'},
+                    {id: Math.floor(Math.random()*10 + 1), user: '将军', content: '鹅鹅鹅'},
+                    {id: Math.floor(Math.random()*10 + 1), user: '哈哈', content: '曲项向天歌'},
+                    {id: Math.floor(Math.random()*10 + 1), user: '好的', content: '白毛浮绿水'},
+                    {id: Math.floor(Math.random()*10 + 1), user: '哦哦', content: '红掌拨清波'}
+                ]
+            },
+            methods: {
+                localComments() {
+                    // 从本地请求评论数据
+                    var lists = JSON.parse(localStorage.getItem('cmts'));
+                    this.list = lists;
+
+                },
+                getElement() {
+                    // 引用可以调数据，调方法
+                    // console.log(this.$refs.myh3.innerText);
+                    // console.log(this.$refs.myh3.show());
+                }
+
+            },
+            created() {
+                this.localComments();
+            },
+            components: {
+                'com-box':commentBox
+            }
+        });
+
+
+
+        // 全局过滤器 进行时间的格式化
+        // Vue.filter('dateFormat', function (dateStr,pattern="") {
+        //     // 根据给定的时间字符串，得到特定的时间
+        //     var dt = new Date(dateStr);
+        //     // yyyy-mm-dd
+        //     var y = dt.getFullYear();
+        //     var m = (dt.getMonth()+1).toString().padStart(2, '0');
+        //     var d = dt.getDate().toString().padStart(2, '0');
+
+        //     if (pattern.toLowerCase() === 'yyyy-mm-dd') {
+        //         return `${y}-${m}-${d}`;
+        //     } else {
+        //         var hh = dt.getHours().toString().padStart(2, '0');
+        //         var mm = dt.getMinutes().toString().padStart(2, '0');
+        //         var ss = dt.getSeconds().toString().padStart(2, '0');
+
+        //         return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+        //     }
+        // });
+
+        // 自定义指令
+
+        // Vue.directive('focus', {
+        //     bind: function(el) {
+
+        //     },
+        //     inserted: function(el) {
+        //         el.focus();
+        //     },
+        //     updated: function(el) {
+
+        //     }
+        // });
+        // Vue.directive('colors', {
+        //     bind: function (el) {
+        //         el.style.color = 'red';
+        //     }
+        // })
+        // 按键修饰符
+        // Vue.config.keyCodes.f2 = 113;
+        // var vm = new Vue({
+        //     el: '.brand-list',
+        //     data: {
+        //         id: '',
+        //         name: '',
+        //         keywords:'',//搜索关键字
+        //         list: [
+        //             {id: 1, name: '宝马', ctime: new Date()},
+        //             {id: 2, name: '奔驰', ctime: new Date()}
+        //         ],
+        //         msg: '好哈哈',
+        //     },
+        //     methods: {
+        //         add() {
+        //             // var id = document.querySelector('[name="brandId"]').value;
+        //             // var name = document.querySelector('[name="brandName"]').value;
+        //             // this.list.push({id: id, name: name, ctime: new Date()});
+        //             var car = {id: this.id, name: this.name, ctime: new Date()};
+        //             this.list.push(car);
+        //         },
+        //         del(id) {
+        //             // 根据id找到需要删除的数据的索引，找到后使用数组的splice方法删除该条数据
+
+        //             // 根据id找到索引 
+        //             // 在数组的some方法中，如果return true,，就会立刻终止这个数组的后续循环
+
+        //             this.list.some((item,i) => {
+        //                 if (item.id == id) {
+        //                     this.list.splice(i,1);
+        //                     return true;
+        //                 }
+        //             });
+
+        //             // findIndex()
+        //             // var index = this.list.findIndex(item => {
+        //             //     if(item.id == id) {
+        //             //         return true;
+        //             //     }
+        //             // });
+        //             // this.list.splice(index,1);
+        //         },
+        //         search(keywords) {
+        //             var newList = [];
+        //             // this.list.forEach (item => {
+        //             //     if (item.name.indexOf(keywords) != -1) {
+        //             //         newList.push(item);
+
+        //             //     }
+        //             // });
+        //             // return newList;
+
+
+
+        //             // 注意： forEach some filter findIndex 这些都属于数组的新方法，
+        //             // 都会对数组中的每一项进行遍历，执行相关的操作
+        //             // filter()方法
+
+        //             return newList = this.list.filter(item => {
+        //                 // if(item.name.indexOf(keywords) != -1) {}
+
+        //             // 注意es6中，为字符串提供了一个新方法，string.prototype.includes('要包含的字符串')
+        //             // 如果包含就返回true，否则包含false
+
+        //                 if(item.name.includes(keywords)) {
+        //                     // 包含返回true
+        //                     return item;
+        //                 }
+
+        //             })
+        //         },
+        //         show() {
+        //             console.log('执行了show方法');
+        //         }
+
+        //     },
+        //     beforeCreate() {
+        //         console.log('hello world');
+        //         console.log('msg===' + this.msg);
+        //         console.log('methods===' + this.show);
+
+        //     },
+        //     created() {
+        //         console.log('msg===' + this.msg);
+        //         this.show();
+        //     },
+        //     beforeMount() {
+        //         console.log(document.querySelector('.id').innerText);
+        //     },
+        //     beforeUpdate() {
+        //         console.log('数据中的值' + this.msg);
+        //         console.log('页面中的值' + document.querySelector('.title').innerText);
+        //     },
+        //     updated() {
+        //         console.log('数据中的值' + this.msg);
+        //         console.log('页面中的值' + document.querySelector('.title').innerText);
+        //     },
+        //     // filters: {
+
+
+        //     // },
+        //     directives: {
+        //         'fontweight': {
+        //             bind: function(el) {
+        //                 el.style.fontWeight = '700';
+        //                 el.style.color = 'blue';
+        //             }
+        //         },
+        //         'fontsize': function(el, binding) {
+        //             el.style.fontSize = parseInt(binding.value) + 'px';
+        //         }
+        //     }
+        // });
+
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>vue-resource</title>
+</head>
+<link rel="stylesheet" type="text/css" href="assets/animate.css">
+<script src="js/vue.js"></script>
+<script src="assets/vue-resource.js"></script>
+<style>
+    .v-enter,
+    .v-leave-to {
+        opacity: 0;
+        transform: translateX(80px);
+    }
+    .v-enter-active,
+    .v-leave-active {
+        transition: all 0.5s ease-in-out;
+    }
+    .v-move {
+        transition: all 0.5s ease-in-out;
+    }
+    .v-leave-active {
+        position: absolute;
+    }
+
+    /* 自定义v-前缀 */
+
+    .my-enter,
+    .my-leave-to {
+        opacity: 0;
+        transform: translateY(150px);
+    }
+    .my-enter-active,
+    .my-leave-active {
+        transition: all 0.5s ease-in-out;
+    }
+
+    /* 小球动画 */
+
+    .ball {
+        width: 15px;
+        height: 15px; 
+        border-radius: 50%; 
+        background:  #f00;
+    }
+    /* 列表动画 */
+
+    .list-item {
+        padding-left: 5px;
+        border: 1px dashed #ddd;
+        height: 35px;
+        line-height: 35px;
+        margin-top: 6px;
+        width: 100%;
+    }
+    .list-item:hover {
+        background: pink; 
+        transition: all 0.5s ease;
+    }
+    
+
+</style>
+<body>
+
+    <div id="app">
+        <input type="button" name="" value="get" @click="getInfo"/>
+        <input type="button" name="" value="post" @click="postInfo" />
+        <input type="button" name="" value="jsonp" @click="jsonpInfo" />
+    </div>
+
+   <div class="transition">
+        <!-- 动画 -->
+        <input type="button" value="toggle" @click="flag = !flag" name="">
+
+        <transition>
+            <h3 v-if="flag">这是一个vue动画</h3>
+        </transition>
+
+        <!-- 自定义v- 动画 -->
+        <input type="button" value="toggle2" @click="flag2 = !flag2" name="">
+
+        <transition name="my">
+            <h3 v-if="flag2">这是一个vue动画</h3>
+        </transition>
+
+        <!-- animate.css 动画 -->
+        <input type="button" value="toggle3" @click="flag3 = !flag3" name="">
+
+        <!-- <transition enter-active-class="animated bounceIn" leave-active-class="animated bounceOut" :duration="1000">
+            <h3 v-if="flag3">这是一个vue动画</h3>
+        </transition> -->
+
+        <transition enter-active-class="bounceIn" leave-active-class="bounceOut" :duration="{ enter: 200, leave: 2000}">
+            <h3 v-if="flag3" class="animated">这是一个vue动画,hello world</h3>
+        </transition>
+
+        <hr>
+        <!-- 动画小球 -->
+        <input type="button" value="快到碗里来" name="" @click="flag4 = !flag4">
+        <transition @before-enter="beforeEnter" @enter="enter" @after-enter="afterEnter">
+            <div class="ball" v-show="flag4">
+            </div>
+        </transition>
+        
+    </div>
+    <hr>
+
+    <div class="list-transition">
+        <div class="buttons">
+            <label>ID:<input type="text" name="" value="" v-model="id"></label>
+            <label>Name:<input type="text" name="" value="" v-model="name"></label>
+            <label><input class="button" type="button" name="" value="增加" @click="add"></label>
+        </div>
+        <!-- <ul> -->
+            <transition-group appear tag="ul">
+                <li class="list-item" v-for="(item,i) in list" :key="item.id" @click="del(i)">
+                    {{ item.id }} ------- {{ item.name}}
+                    <!-- <a href="javascript:;"></a> -->
+                </li>
+            </transition-group>
+        <!-- </ul> -->
+    </div>
+
+
+
+    <hr>
+    <!-- 登录注册切换 -->
+
+   <!--  <div class="login">
+        <a href="" @click.prevent="flag=true">登录</a>
+        <a href="" @click.prevent="flag=false">注册</a>
+
+        <mylogin v-if="flag"></mylogin>
+        <myregister v-else="flag"></myregister>
+    </div>
+ -->    
+ <div class="login">
+        <a href="" @click.prevent="comName='mylogin'">登录</a>
+        <a href="" @click.prevent="comName='myregister'">注册</a>
+
+        
+        <transition mode="out-in">
+            <component :is="comName"></component>
+        </transition>
+    </div>
+
+    <hr>
+    <div class="component">
+        <!-- 组件 -->
+        <h4>自己</h4>
+        <!-- <mycoml></mycoml> -->
+        <login v-bind:parentmsg="msg" v-on:func="show"></login>
+    </div>
+
+</body>
+    <template id="tem">
+        <div>
+            <h1>hello world ---- {{ msg }}</h1>
+            <span>hi wolrd</span>
+        </div>
+    </template>
+
+    <script>
+
+var component = new Vue({
+    el: '.component',
+    data: {
+        msg: '我是父组件中的数据',
+        formSonmsg: null
+    },
+    methods: {
+            show(sonmsg) {
+                // console.log('我是父组件中的show方法-----' + sonmsg);
+                console.log(sonmsg.name);
+                this.formSonmsg = sonmsg;
+            }
+        },
+    components: {
+        login: {
+            data() {
+                return {
+                    title: '123',
+                    sonmsg: {id: 1, name: '小偷儿子', age: '3'}
+                }
+            },
+            methods: {
+                myclick() {
+                    this.$emit('func', this.sonmsg)
+                }
+            },
+            template:'<h3>{{ title }}我是私有组件--- {{ parentmsg }} <input type="button" value="我在响应父组件传递给我的事件，点我" @click="myclick" /></h3>',
+                // props 中的数据，都是只读的，无法重新赋值
+                props: ['parentmsg']
+        }
+        // login,
+    }
+
+})
+
+        Vue.component('mylogin', {
+            template:'<h4>这是登录组件</h4>'
+        });
+        Vue.component('myregister', {
+            template:'<h4>这是注册组件</h4>'
+        });
+
+        var login = new Vue({
+            el:'.login',
+            data: {
+                flag: true,
+                comName: 'mylogin'
+            }
+        })
+
+        // var coml = Vue.extend({
+        //     template:'<h3>hello world</h3>'
+        // });
+
+        // Vue.component('mycoml', coml);
+
+        // Vue.component('mycoml', Vue.extend({
+        //     template: '<h3>这是我创建的第一个组件</h3>'
+        // }))
+
+        // Vue.component('mycoml', {
+        //     template: '<h3>这是我创建的第一个组件</h3>'
+        // });
+
+        Vue.component('mycoml', {
+            template: '#tem',
+            data: function() {
+                return {
+                    msg: '这是组件在的data定义的数据'
+                }
+            }
+        });
+
+
+
+
+
+
+        var vim = new Vue({
+            el: '#app',
+            methods: {
+                getInfo() {
+                    this.$http.get('http://vue.studyit.io/api/get').then(result => {
+                        console.log(result.body);
+                    })
+                },
+                postInfo() {
+                    this.$http.post('http://vue.studyit.io/api/post', {}, { emulateJSON: true }).then(result => {
+                        console.log(result);
+                    })
+                },
+                jsonpInfo() {
+                    this.$http.jsonp('http://vue.studyit.io/api/json').then(result => {
+                        console.log(result.body);
+                    })
+                },
+               
+            }
+        });
+
+        var vim2 = new Vue({
+            el:'.transition',
+            data: {
+                flag: false,
+                flag2: false,
+                flag3: false,
+                flag4: false
+            },
+            methods: {
+                beforeEnter(el) {
+                    el.style.transform = "translate(0, 0)";
+                },
+                enter(el) {
+                    // el.offsetWidth offsetHeight offsetTop offsetLeft 都行 会强制动画刷新
+                    el.offsetWidth;
+                    el.style.transform = "translate(150px, 450px)";
+                    el.style.transition = "all 1s ease";
+
+                    // done();
+                },
+                afterEnter(el) {
+                    // el.style.opacity = 0;
+                    // 第一个功能，是控制小球的显示和隐藏
+                    // 第二个功能：直接跳过后半场，让flag标识符直接变为false
+                    // 当第二次点击按钮的时候，flag false --> true 执行上半场动画
+                    this.flag4 = !this.flag4;
+                    // Vue把一个完整的动画，使用钩子函数，拆分为了两个部分
+                    // flag = false -> true -> false
+                }
+            }
+        });
+
+        // 列表动画
+
+        // 对象字面量 定义一个组件模板对象
+
+        // var login = {
+        //     template:'<h3>我是私有组件 对象字母--- 我是父组件传给子组件的数据{{ parentmsg }}</h3>'
+        // }
+
+        var list = new Vue({
+            el:'.list-transition',
+            data: {
+                id: '',
+                name: '',
+                list: [
+                    {id: 1, name: '秦桧'},
+                    {id: 2, name: '赵高'},
+                    {id: 3, name: '烟囱'},
+                    {id: 4, name: '魏忠贤'}
+                ]
+            },
+            methods: {
+                add() {
+                    this.list.push({ id: this.id, name: this.name});
+                    this.id = this.name = '';
+
+
+                },
+                // del(id) {
+                //     this.list.some((item,i) => {
+                //         if(item.id == id) {
+                //             this.list.splice(i,1);
+                //             return true;
+                //         }
+                //     })
+                // }
+                del(i) {
+                    this.list.splice(i,1);
+                }
+            }
+        });
+
+
+        
+    </script>
+</html>

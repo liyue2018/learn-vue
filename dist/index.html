@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>learn-vue</title>
+    <link rel="stylesheet" href="">
+    <style type="text/css" media="screen">
+        [v-cloak] {
+            display: none;
+        }
+
+        .red {
+            color: red;
+        }
+        .thin {
+            font-weight: 700;
+        }
+        .italic {
+            font-style: italic;
+        }
+        .active {
+            /* 对中文有作用 */
+            letter-spacing: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- 第一种使用方式：直接使用数组 这里的class要使用v-bind做数据绑定 -->
+        <h1 :class="['red','italic']">这是一段很大很大的文字哦！</h1>
+        <h1 :class="['red','italic', flag ? 'active':'']">这是一段很大很大的文字哦！</h1>
+        <h1 :class="['red','italic', {'active':flag}]">这是一段很大很大的文字哦！</h1>
+        <h1 :class="{red: true, italic: true, thin: true}">这是一段很大很大的文字哦！</h1>
+        <h1 :class="classObj">这是一段很大很大的文字哦！</h1>
+        <!-- 使用v-cloak能够解决插值表达式闪烁的问题 -->
+        <p v-cloak>+++++{{ msg }}------</p>
+        <h4 v-text='msg'>======</h4>
+        <div>
+            {{ msg2 }}
+        </div>
+        <!-- v-html 会转义字符 -->
+        <div v-html='msg2'></div>
+        <!-- v-bind绑定属性的指令 -->
+        <!-- <input type="button" value="按钮" name="" v-bind:title="mytitle + '123'" /> -->
+        <!-- 简写 -->
+        <!-- v-on 事件绑定机制 -->
+        <input type="button" value="按钮" name="" :title="mytitle + '123'" />
+        <input type="button" value="v-on" v-on:click="show" name="">
+        <!-- 常见事件都可以绑定 -->
+        <!-- <input type="button" value="v-on" v-on:mouseenter="show" name=""> -->
+
+        <ul>
+            <li v-for="(item,i) in list">{{i}}-----{{item}}</li>
+        </ul>
+        <ul>
+            <li v-for="user in plist">{{ user.id}}------{{user.name}}</li>
+        </ul>
+        <ul>
+            <li v-for="(val, key, i) in user">{{val}}------{{key}}-----{{i}}</li>
+        </ul>
+    </div>
+    <!-- 跑马灯效果 -->
+    <div class="race-lamp">
+        <input type="button" value="跑起来" @click = "run" />
+        <input type="button" value="停" @click = "stop" />
+
+        <p> {{ msg }}</p>
+    </div>
+    <!-- 简易计算器 -->
+    <div class="math">
+        <h3>简易计算器</h3>
+        <input type="number" name="" v-model="num1"/>
+        <select name="" v-model="opt">
+            <option value="-">-</option>
+            <option value="+">+</option>
+            <option value="*">*</option>
+            <option value="/">/</option>
+        </select>
+        <input type="number" name="" v-model="num2"/>
+        <input type="button" value="=" @click="calc"/>
+        <input type="number" name="" id="" v-model="result"/>
+    </div>
+
+    <!-- 添加成员 -->
+    <div class="add-person">
+        <h3>添加成员</h3>
+        <label for="userid">
+            Id:
+            <input name="userid" type="text" v-model="id" />
+        </label>
+        <label for="username">
+            Name:
+            <input name="username" type="text" v-model="name" />
+        </label>
+        <input type="button" value="添加" @click="addPerson">
+
+        <ul>
+            <li v-for="item in person" :key = "item.id">
+                <input type="checkbox">{{ item.id }} --- {{ item.name }}
+            </li>
+        </ul>
+    </div>
+
+
+
+
+
+    <script src="js/vue.js"></script>
+    <script>
+        var vm = new Vue({
+            el: '.app',
+            data: {
+                msg: 'Hello World',
+                msg2: '<h1>我很开心</h1>',
+                mytitle: '这是一个自己定义的title',
+                flag: true,
+                classObj: {red: true, italic: true, thin: true},
+                list: [1,2,3,4,5,6],
+                plist: [
+                     {id: 1, name: 'zs'},
+                     {id: 2, name: 'zs'},
+                     {id: 3, name: 'zs'},
+                     {id: 4, name: 'zs'}
+                ],
+                user: {
+                    id: 1,
+                    name: 'jack',
+                    gender: '男'
+                }
+            },
+            // methods 定义了当前vue实例中所有可用的方法
+            methods: {
+                show: function () {
+                    alert('Hello')
+                }
+
+            }
+        });
+
+        var lamp = new Vue({
+            // 注意： 在lamp中如果想要获取data上的数据，或者methods上的方法，需要使用 this.数据属性名或this.方法名来进行访问
+            el: '.race-lamp',
+            data: {
+                msg: '~跑起来吧，文字~~~~~~~',
+                // 定时器id
+                timerId: null 
+            },
+            // 给按钮绑定点击事件
+            // 在事件的处理函数中，写业务逻辑
+            // 拿到msg字符串，使用substring 截取第一个字符串，放到最后的位置
+            // setInterval()方法
+
+            methods: {
+                run() {
+                    // 判断定时器是否存在
+
+                    if (this.timerId != null) return;
+                    // var _this = this;
+                    // 箭头函数的作用： 使内部的this和外部的this 指向一致
+                    this.timerId = setInterval(() => {
+                        // 获取到第一个字符串
+                        var start = this.msg.substring(0,1);
+                        // 获取剩余的
+                        var end = this.msg.substring(1);
+                        // 拼接
+                        this.msg = end + start;
+                        // 注意： VM实例会实时监听data数据，自动更新页面数据
+                        // 好处： 程序员不需要关心渲染问题，只需要操心数据操作    
+                    }, 400)
+                },
+                stop() {
+                    clearInterval(this.timerId);
+                    // 重新设置timerId
+                    this.timerId = null;
+                }            
+            }
+        });
+
+        // 简易计算器
+
+        var math = new Vue({
+            el: '.math',
+            data: {
+                num1: 0,
+                num2: 0,
+                result: 0,
+                opt: '/'
+            },
+            methods: {
+                calc() {
+                    // 计算方法
+                    // switch(this.opt) {
+                    //     case '+':
+                    //         this.result = parseInt(this.num1) + parseInt(this.num2)
+                    //         break;
+                    //     case '-':
+                    //         this.result = parseInt(this.num1) - parseInt(this.num2)
+                    //         break;
+                    //     case '*':
+                    //         this.result = parseInt(this.num1) * parseInt(this.num2)
+                    //         break;
+                    //     case '/':
+                    //         this.result = parseInt(this.num1) / parseInt(this.num2)
+                    //         break;
+                    // }
+
+                    // 少用这种方法
+                    var codestr = 'parseInt(this.num1)' + this.opt  + 'parseInt(this.num2)';
+                    // eval拼接字符串
+                    this.result = eval(codestr);
+                }
+            }
+        });
+
+        var addPerson = new Vue({
+            el: '.add-person',
+            data: {
+                id: '',
+                name: '',
+                person: [
+                   {id: 1, name: 'jack'},
+                   {id: 2, name: 'smith'},
+                   {id: 3, name: 'jerry'},
+                   {id: 4, name: 'rose'},
+                   {id: 5, name: 'jackyeu'}
+                ]
+                },
+                methods: {
+                    addPerson() {
+                        // this.person.push({id: this.id, name: this.name})
+                        this.person.unshift({id: this.id, name: this.name})
+                    }
+                }
+
+        })
+    </script>
+</body>
+</html>
